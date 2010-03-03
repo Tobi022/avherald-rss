@@ -1,0 +1,26 @@
+                        Avherald-RSS
+
+  A Python script for parsing the avherald articles into RSS.
+
+Requires Python 2.3.  (Uses the datetime module for timestamps.)
+
+  ======  ======  ======  ======  ======  ======  ======  ======
+  
+For this to work you need to copy the file 'PyRSS2Gen.py' from
+Dalke Scientific Software, LLC into the same directory.
+http://www.dalkescientific.com/Python/PyRSS2Gen.html
+
+Be sure to replace the pathToFile with a working one.
+Enjoy!
+
+Please be aware of the avherald.com copyright.
+It prohibits reprint and republishing, so please do not publish
+your generated .xml file!
+
+LICENSE:
+
+This is copyright (c) by salkinium.com.
+and released under the BSD license.  See the file LICENSE
+in the distribution or 
+  http://www.opensource.org/licenses/bsd-license.php
+for details.
