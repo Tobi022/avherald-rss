@@ -22,8 +22,6 @@ for relativeArticleLink in relativeArticleLinks:
 rss = RSS2.RSS2(
     language = "en-US",
     copyright = "Copyright (c) 2008-2010, by The Aviation Herald",
-    managingEditor = "webmaster@avherald.com",
-    webMaster = "Simon Hradecky",
     title = "Aviation Herald News",
     link = "http://www.avherald.com/",
     description = "Incidents and News in Aviation",
