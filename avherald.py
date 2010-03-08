@@ -11,12 +11,7 @@ import hashlib
 req = urlopen('http://avherald.com/h?list=&opt=0')
 
 # Find all links to the articles
-relativeArticleLinks = re.findall('/h\?article=[a-f0-9/]*&opt=\d', req.read())
-
-# Build complete link and store in array
-articleLinks = []
-for relativeArticleLink in relativeArticleLinks:
-    articleLinks.append('http://avherald.com' + relativeArticleLink)
+articleLinks = re.findall('/h\?article=[a-f0-9/]*&opt=\d', req.read())
 
 # Initialize the rss feed
 rss = RSS2.RSS2(
@@ -29,46 +24,26 @@ rss = RSS2.RSS2(
 
 # Do the actual work!
 for articleLink in articleLinks:
-    
-    articleRequest = urlopen(articleLink)
-    articleRaw = articleRequest.read()
-    
-    titlereg = re.findall('<span class="headline_article">.*?</span>', articleRaw)
-    titler = titlereg[0]     # Title of Article
-    titler = titler[31:-7]
-    
-    datereg = re.findall('<span class="time_avherald">.*?</span>', articleRaw)
-    dater = datereg[0]
-    dater = dater[28:-7]
-    
-    dateyr = re.findall('[0-9]{4}', dater)                      # Find raw year
-    datemr = re.findall(' [A-Z][a-z]{2} ', dater)               # Find raw month
-    datedr = re.findall('[0-9]{1,2}[r,s,t,n,d,h]{2,3}', dater)  # Find raw day
-    datetr = re.findall('[0-9]{2}:[0-9]{2}Z', dater)            # Find raw time
-    #print dateyr, datemr, datedr, datetr
+    articleLink = 'http://www.avherald.com' + articleLink
+    articleRaw = urlopen(articleLink).read()
+    titler = re.findall('<span class="headline_article">.*?</span>', articleRaw)[0][31:-7]    # Title of Article
+    dater = re.findall('<span class="time_avherald">.*?</span>', articleRaw)[0][28:-7]
     
     # Time Published
-    datey = dateyr[1]     # Year
-    datem = datemr[1]
-    datem = datem.strip()
-    
+    datey = re.findall('[0-9]{4}', dater)[1]                            # Year
+    datem = re.findall(' [A-Z][a-z]{2} ', dater)[1].strip()             # Find Month
     dmonth = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     for x in range(12):
         if datem == dmonth[x]:
             datem = x+1   # Month
             break
-    
-    dated = datedr[1]
-    dated = dated.rstrip('rstndh')    # Day
-    
-    datet = datetr[1]
+    dated = re.findall('[0-9]{1,2}[r,s,t,n,d,h]{2,3}', dater)[1].rstrip('rstndh')  # Day
+    datet = re.findall('[0-9]{2}:[0-9]{2}Z', dater)[1]                  # Find Time
     dateth = datet[:-4]   # Hour
     datetm = datet[3:-1]  # Minute
     
-    subjectreg = re.findall('<span class="sitetext">.*?</span>', articleRaw)
-    subjectr = subjectreg[3]
     # Add the Date in small grey font to the Article
-    subjectr = "<font size=-1 color=\"grey\">" + dater + "<br><br\\><br><br\\></font>" + subjectr[23:-7]
+    subjectr = "<font size=-1 color=\"grey\">" + dater + "<br><br\\><br><br\\></font>" + re.findall('<span class="sitetext">.*?</span>', articleRaw)[3][23:-7]
     
     # Print the stuff, so it looks cool
     print datey, datem, dated, dateth, datetm
