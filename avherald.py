@@ -6,6 +6,8 @@ import datetime
 import PyRSS2Gen as RSS2
 import hashlib
 
+pathToFile = "/some/directory/on/local/hdd/or/server/"
+
 # Get the source of the home page
 # Change the 'opt' for filters
 req = urlopen('http://avherald.com/h?list=&opt=0')
@@ -43,7 +45,7 @@ for articleLink in articleLinks:
     datetm = datet[3:-1]  # Minute
     
     # Add the Date in small grey font to the Article
-    subjectr = "<font size=-1 color=\"grey\">" + dater + "<br><br\\><br><br\\></font>" + re.findall('<span class="sitetext">.*?</span>', articleRaw)[3][23:-7]
+    subjectr = "<font size=-1 color=\"grey\">" + dater + "<br><br\\><br><br\\></font>" + re.findall('<span class="sitetext">.*?</span>', articleRaw, re.DOTALL)[3][23:-7]
     
     # Print the stuff, so it looks cool
     print datey, datem, dated, dateth, datetm
@@ -58,5 +60,4 @@ for articleLink in articleLinks:
                 guid = RSS2.Guid(hashlib.sha1(subjectr).hexdigest(),0),
                 pubDate = datetime.datetime(int(datey),int(datem),int(dated),int(dateth),int(datetm))))
 
-pathToFile = "/some/directory/on/local/hdd/or/server/"
 rss.write_xml(open(pathToFile + "aviationherald.xml", "w"))
