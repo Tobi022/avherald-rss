@@ -5,15 +5,21 @@ import re
 import datetime
 import PyRSS2Gen as RSS2
 import hashlib
+import socket
+import parsedatetime.parsedatetime
 
-pathToFile = "/some/directory/on/local/hdd/or/server/"
+path_to_rss_file = "/some/directory/on/local/hdd/or/server/aviationherald.xml"
 
+dtcal = parsedatetime.parsedatetime.Calendar()
+# avherald.com server can be really slow, set 20s timeout
+socket.setdefaulttimeout(20)
 # Get the source of the home page
 # Change the 'opt' for filters
 req = urlopen('http://avherald.com/h?list=&opt=0')
 
 # Find all links to the articles
-articleLinks = re.findall('/h\?article=[a-f0-9/]*&opt=\d', req.read())
+article_links = re.findall('/h\?article=[a-f0-9/]*&opt=\d', req.read())
+print article_links
 
 # Initialize the rss feed
 rss = RSS2.RSS2(
@@ -25,39 +31,48 @@ rss = RSS2.RSS2(
     lastBuildDate = datetime.datetime.utcnow())
 
 # Do the actual work!
-for articleLink in articleLinks:
-    articleLink = 'http://www.avherald.com' + articleLink
-    articleRaw = urlopen(articleLink).read()
-    titler = re.findall('<span class="headline_article">.*?</span>', articleRaw)[0][31:-7]    # Title of Article
-    dater = re.findall('<span class="time_avherald">.*?</span>', articleRaw)[0][28:-7]
+for article_link in article_links:
+    article_link = 'http://www.avherald.com' + article_link
+    article_raw = urlopen(article_link).read()
     
-    # Time Published
-    datey = re.findall('[0-9]{4}', dater)[1]                            # Year
-    datem = re.findall(' [A-Z][a-z]{2} ', dater)[1].strip()             # Find Month
-    dmonth = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    for x in range(12):
-        if datem == dmonth[x]:
-            datem = x+1   # Month
-            break
-    dated = re.findall('[0-9]{1,2}[r,s,t,n,d,h]{2,3}', dater)[1].rstrip('rstndh')  # Day
-    datet = re.findall('[0-9]{2}:[0-9]{2}Z', dater)[1]                  # Find Time
-    dateth = datet[:-4]   # Hour
-    datetm = datet[3:-1]  # Minute
-    
+    # Title of Article
+    title = re.findall('<span class="headline_article">.*?</span>', \
+        article_raw)[0][31:-7]
+                                
+    date_created_updated_raw = re.findall( \
+        '<span class="time_avherald">.*?</span>', article_raw) \
+        [0][28:-7].replace('  ',' ')
+
     # Add the Date in small grey font to the Article
-    subjectr = "<font size=-1 color=\"grey\">" + dater + "<br><br\\><br><br\\></font>" + re.findall('<span class="sitetext">.*?</span>', articleRaw, re.DOTALL)[3][23:-7]
+    message = "<font size=-1 color=\"grey\">" + date_created_updated_raw + \
+        "<br><br\\><br><br\\></font>" + re.findall( \
+        '<span class="sitetext">.*?</span>', article_raw, re.DOTALL)[3][23:-7]
+    
+    # Parse all the dates
+    date_created_updated = re.findall( \
+    ' [JASONFMD][aepuco][bryglnpctv].[0-9]{1,2}[r,s,t,n,d,h]{0,3}.[0-9]{4}.[0-9]{2}:[0-9]{2}Z', \
+        date_created_updated_raw)
+    
+    # Time of Creation
+    # dateCreated = calender.parse(date_created_updated[0].strip())
+    # Time of Update
+    print date_created_updated
+    date_updated = dtcal.parse(date_created_updated[1].strip())[0]
+    # Year, Month, Day, Hour, Minute, Second, Weekday, Yearday, isDST
     
     # Print the stuff, so it looks cool
-    print datey, datem, dated, dateth, datetm
-    print titler
+    print title
+    print date_created_updated_raw + '\n'
     
     # Add Item to the rss feed
     rss.items.append(RSS2.RSSItem(
-                title = titler,
-                link = articleLink,
-                description = subjectr,
-                # Sometimes, articles get updated without an url change, thats why a checksum, isPermalink = false
-                guid = RSS2.Guid(hashlib.sha1(subjectr).hexdigest(),0),
-                pubDate = datetime.datetime(int(datey),int(datem),int(dated),int(dateth),int(datetm))))
+                title = title,
+                link = article_link,
+                description = message,
+                # Sometimes, articles get updated without an url change
+                # thats why a checksum, isPermalink = false
+                guid = RSS2.Guid(hashlib.sha1(message).hexdigest(),0),
+                pubDate = datetime.datetime(date_updated[0],date_updated[1], \
+                    date_updated[2],date_updated[3],date_updated[4])))
 
-rss.write_xml(open(pathToFile + "aviationherald.xml", "w"))
+rss.write_xml(open(path_to_rss_file, "w"))
