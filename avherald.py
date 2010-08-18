@@ -3,7 +3,7 @@
 from urllib2 import urlopen
 import re
 import datetime
-import PyRSS2Gen as RSS2
+import PyRSS2Gen
 import hashlib
 import socket
 import parsedatetime.parsedatetime
@@ -19,10 +19,10 @@ req = urlopen('http://avherald.com/h?list=&opt=0')
 
 # Find all links to the articles
 article_links = re.findall('/h\?article=[a-f0-9/]*&opt=\d', req.read())
-print article_links
+#print article_links
 
 # Initialize the rss feed
-rss = RSS2.RSS2(
+rss = PyRSS2Gen.RSS2(
     language = "en-US",
     copyright = "Copyright (c) 2008-2010, by The Aviation Herald",
     title = "Aviation Herald News",
@@ -49,14 +49,13 @@ for article_link in article_links:
         '<span class="sitetext">.*?</span>', article_raw, re.DOTALL)[3][23:-7]
     
     # Parse all the dates
-    date_created_updated = re.findall( \
-    ' [JASONFMD][aepuco][bryglnpctv].[0-9]{1,2}[r,s,t,n,d,h]{0,3}.[0-9]{4}.[0-9]{2}:[0-9]{2}Z', \
+    date_created_updated = re.findall(' [JASONFMD][aepuco][bryglnpctv].' + \
+        '[0-9]{1,2}[r,s,t,n,d,h]{0,3}.[0-9]{4}.[0-9]{2}:[0-9]{2}Z', \
         date_created_updated_raw)
     
     # Time of Creation
-    # dateCreated = calender.parse(date_created_updated[0].strip())
+    # date_created = dtcal.parse(date_created_updated[0].strip())
     # Time of Update
-    print date_created_updated
     date_updated = dtcal.parse(date_created_updated[1].strip())[0]
     # Year, Month, Day, Hour, Minute, Second, Weekday, Yearday, isDST
     
@@ -65,13 +64,13 @@ for article_link in article_links:
     print date_created_updated_raw + '\n'
     
     # Add Item to the rss feed
-    rss.items.append(RSS2.RSSItem(
+    rss.items.append(PyRSS2Gen.RSSItem(
                 title = title,
                 link = article_link,
                 description = message,
                 # Sometimes, articles get updated without an url change
                 # thats why a checksum, isPermalink = false
-                guid = RSS2.Guid(hashlib.sha1(message).hexdigest(),0),
+                guid = PyRSS2Gen.Guid(hashlib.sha1(message).hexdigest(),0),
                 pubDate = datetime.datetime(date_updated[0],date_updated[1], \
                     date_updated[2],date_updated[3],date_updated[4])))
 

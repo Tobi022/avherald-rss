@@ -10,8 +10,12 @@ For this to work you need to copy the file 'PyRSS2Gen.py' from
 Dalke Scientific Software, LLC into the same directory.
 http://www.dalkescientific.com/Python/PyRSS2Gen.html
 
-The script parses the time using parsedatetime, which you need in the same directory as well. You can get the latest version here:
+The script parses the time using parsedatetime, which you need in
+the same directory as well. You can get the latest version here:
 http://code.google.com/p/parsedatetime/
+
+You can change the filter options by changing the 'opt=' parameter
+in the avherald.com url.
 
 Be sure to replace the path_to_rss_file with a working one.
 Enjoy!
