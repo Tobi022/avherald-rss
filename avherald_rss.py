@@ -8,7 +8,7 @@ import hashlib
 import socket
 import parsedatetime.parsedatetime
 
-path_to_rss_file = "/home/salkinium/sites/feeds.salkinium.com/aviationherald.xml"
+path_to_rss_file = "/some/directory/on/local/hdd/or/server/aviationherald.xml"
 
 dtcal = parsedatetime.parsedatetime.Calendar()
 # avherald.com server can be really slow, set 20s timeout
