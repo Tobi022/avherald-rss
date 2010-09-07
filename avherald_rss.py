@@ -8,7 +8,7 @@ import hashlib
 import socket
 import parsedatetime.parsedatetime
 
-path_to_rss_file = "/some/directory/on/local/hdd/or/server/aviationherald.xml"
+path_to_rss_file = "/home/salkinium/sites/feeds.salkinium.com/aviationherald.xml"
 
 dtcal = parsedatetime.parsedatetime.Calendar()
 # avherald.com server can be really slow, set 20s timeout
@@ -43,15 +43,17 @@ for article_link in article_links:
         '<span class="time_avherald">.*?</span>', article_raw) \
         [0][28:-7].replace('  ',' ')
 
+    article_content = re.findall('<p align="left"><span class="sitetext">.*?<!--End Article-->', \
+        article_raw, re.DOTALL)[0][39:-23]
+
     # Add the Date in small grey font to the Article
     message = "<font size=-1 color=\"grey\">" + date_created_updated_raw + \
-        "<br><br\\><br><br\\></font>" + re.findall( \
-        '<span class="sitetext">.*?</span>', article_raw, re.DOTALL)[3][23:-7]
+        "<br><br\\><br><br\\></font>" + article_content
     
     # Parse all the dates
-    date_created_updated = re.findall(' [JASONFMD][aepuco][bryglnpctv].' + \
-        '[0-9]{1,2}[r,s,t,n,d,h]{0,3}.[0-9]{4}.[0-9]{2}:[0-9]{2}Z', \
-        date_created_updated_raw)
+    date_created_updated = re.findall( \
+    ' [JASONFMD][aepuco][bryglnpctv].[0-9]{1,2}[r,s,t,n,d,h]{0,3}.' + \
+    '[0-9]{4}.[0-9]{2}:[0-9]{2}Z', date_created_updated_raw)
     
     # Time of Creation
     # date_created = dtcal.parse(date_created_updated[0].strip())
