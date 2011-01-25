@@ -11,8 +11,6 @@ import parsedatetime.parsedatetime
 path_to_rss_file = "/some/directory/on/local/hdd/or/server/aviationherald.xml"
 
 dtcal = parsedatetime.parsedatetime.Calendar()
-# avherald.com server can be really slow, set 20s timeout
-socket.setdefaulttimeout(20)
 # Get the source of the home page
 # Change the 'opt' for filters
 req = urlopen('http://avherald.com/h?list=&opt=0')
