@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from urllib2 import urlopen
+from urllib2
 import re
 import datetime
 import PyRSS2Gen
@@ -12,7 +12,10 @@ path_to_rss_file = "/some/directory/on/local/hdd/or/server/aviationherald.xml"
 dtcal = parsedatetime.parsedatetime.Calendar()
 # Get the source of the home page
 # Change the 'opt' for filters
-req = urlopen('http://avherald.com/h?list=&opt=0')
+opener = urllib2.build_opener()
+# add different user agent here
+opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+req = opener.open('http://avherald.com/h?list=&opt=0')
 
 # Find all links to the articles
 article_links = re.findall('/h\?article=[a-f0-9/]*&opt=\d', req.read())
@@ -21,7 +24,7 @@ article_links = re.findall('/h\?article=[a-f0-9/]*&opt=\d', req.read())
 # Initialize the rss feed
 rss = PyRSS2Gen.RSS2(
     language = "en-US",
-    copyright = "Copyright (c) 2008-2010, by The Aviation Herald",
+    copyright = "Copyright (c) 2008-2012, by The Aviation Herald",
     title = "Aviation Herald News",
     link = "http://www.avherald.com/",
     description = "Incidents and News in Aviation",
