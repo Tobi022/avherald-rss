@@ -45,11 +45,12 @@ for article_link in article_links:
     # Date of Article
     date_created_updated_raw = re.findall('<span class="time_avherald">.*?</span>', article_raw)[0][28:-7].replace('  ',' ')
 
-    # Content of Article
-    article_content = re.findall('<p align="left"><span class="sitetext">.*?<!--End Article-->', article_raw, re.DOTALL)[0][39:-23]
+    # Fetch content of Article & do some formatting
+    article_content = re.findall('<p align="left"><span class="sitetext">.*?<!--End Article-->', article_raw, re.DOTALL)[0][39:-18].replace('</span></td></tr></table></p>','')
+    article_content = article_content.replace('<br/>','<br />')
 
     # Add the Date in small grey font to the Article
-    message = "<font size=-1 color=\"grey\">" + date_created_updated_raw + "<br><br\\><br><br\\></font>" + article_content
+    message = "<font size=-1 color=\"grey\">" + date_created_updated_raw + "<br /><br /></font>" + article_content
     
     # Parse all the dates
     date_created_updated = re.findall(' [JASONFMD][aepuco][bryglnpctv].[0-9]{1,2}[r,s,t,n,d,h]{0,3}.' + '[0-9]{4}.[0-9]{2}:[0-9]{2}Z', date_created_updated_raw)
