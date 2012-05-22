@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from urllib2
+import urllib2
 import re
 import datetime
 import PyRSS2Gen
@@ -15,11 +15,13 @@ dtcal = parsedatetime.parsedatetime.Calendar()
 opener = urllib2.build_opener()
 # add different user agent here
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-req = opener.open('http://avherald.com/h?list=&opt=0')
+# make this usable for urllib2
+urllib2.install_opener(opener)
+# and open the site
+req = urllib2.urlopen('http://avherald.com/')
 
 # Find all links to the articles
 article_links = re.findall('/h\?article=[a-f0-9/]*&opt=\d', req.read())
-#print article_links
 
 # Initialize the rss feed
 rss = PyRSS2Gen.RSS2(
@@ -33,27 +35,24 @@ rss = PyRSS2Gen.RSS2(
 # Do the actual work!
 for article_link in article_links:
     article_link = 'http://www.avherald.com' + article_link
-    article_raw = urlopen(article_link).read()
+    article_raw = urllib2.urlopen(article_link).read()
+    
     
     # Title of Article
-    title = re.findall('<span class="headline_article">.*?</span>', \
-        article_raw)[0][31:-7]
-                                
-    date_created_updated_raw = re.findall( \
-        '<span class="time_avherald">.*?</span>', article_raw) \
-        [0][28:-7].replace('  ',' ')
+    # '<span class="headline_article">' is incorrect, '<span class="headline_avherald">' isn't unique - therefore this grabs the window title
+    title = re.findall('<title>.*?</title>', article_raw)[0][7:-8]
+    
+    # Date of Article
+    date_created_updated_raw = re.findall('<span class="time_avherald">.*?</span>', article_raw)[0][28:-7].replace('  ',' ')
 
-    article_content = re.findall('<p align="left"><span class="sitetext">.*?<!--End Article-->', \
-        article_raw, re.DOTALL)[0][39:-23]
+    # Content of Article
+    article_content = re.findall('<p align="left"><span class="sitetext">.*?<!--End Article-->', article_raw, re.DOTALL)[0][39:-23]
 
     # Add the Date in small grey font to the Article
-    message = "<font size=-1 color=\"grey\">" + date_created_updated_raw + \
-        "<br><br\\><br><br\\></font>" + article_content
+    message = "<font size=-1 color=\"grey\">" + date_created_updated_raw + "<br><br\\><br><br\\></font>" + article_content
     
     # Parse all the dates
-    date_created_updated = re.findall( \
-    ' [JASONFMD][aepuco][bryglnpctv].[0-9]{1,2}[r,s,t,n,d,h]{0,3}.' + \
-    '[0-9]{4}.[0-9]{2}:[0-9]{2}Z', date_created_updated_raw)
+    date_created_updated = re.findall(' [JASONFMD][aepuco][bryglnpctv].[0-9]{1,2}[r,s,t,n,d,h]{0,3}.' + '[0-9]{4}.[0-9]{2}:[0-9]{2}Z', date_created_updated_raw)
     
     # Time of Creation
     # date_created = dtcal.parse(date_created_updated[0].strip())
@@ -73,7 +72,6 @@ for article_link in article_links:
                 # Sometimes, articles get updated without an url change
                 # thats why a checksum, isPermalink = false
                 guid = PyRSS2Gen.Guid(hashlib.sha1(message).hexdigest(),0),
-                pubDate = datetime.datetime(date_updated[0],date_updated[1], \
-                    date_updated[2],date_updated[3],date_updated[4])))
+                pubDate = datetime.datetime(date_updated[0],date_updated[1],date_updated[2],date_updated[3],date_updated[4])))
 
 rss.write_xml(open(path_to_rss_file, "w"))
