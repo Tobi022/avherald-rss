@@ -18,10 +18,23 @@ opener.addheaders = [('User-agent', 'Mozilla/5.0')]
 # make this usable for urllib2
 urllib2.install_opener(opener)
 # and open the site
-req = urllib2.urlopen('http://avherald.com/')
+req = urllib2.urlopen('http://avherald.com/h?list=&opt=0').read()
 
 # Find all links to the articles
-article_links = re.findall('/h\?article=[a-f0-9/]*&opt=\d', req.read())
+article_links = re.findall('/h\?article=[a-f0-9/]*&opt=\d', req)
+
+# Find link to the next page
+next_pages = re.findall('/h\?list=&opt=\d&offset=[0-9]*%[A-Fa-f0-9/]*', req)
+
+for next_page in next_pages:
+    next_page = 'http://avherald.com' + next_page
+    
+    # open the next page
+    req_next = urllib2.urlopen(next_page).read()
+    
+    # Find all links to the articles on next page and add them to the others
+    article_links = article_links + re.findall('/h\?article=[a-f0-9/]*&opt=\d', req_next)
+
 
 # Initialize the rss feed
 rss = PyRSS2Gen.RSS2(
