@@ -10,14 +10,13 @@ import parsedatetime.parsedatetime
 path_to_rss_file = "/some/directory/on/local/hdd/or/server/aviationherald.xml"
 
 dtcal = parsedatetime.parsedatetime.Calendar()
+
 # Get the source of the home page
-# Change the 'opt' for filters
 opener = urllib2.build_opener()
 # add different user agent here
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-# make this usable for urllib2
 urllib2.install_opener(opener)
-# and open the site
+# Change the 'opt' for filters
 req = urllib2.urlopen('http://avherald.com/h?list=&opt=0').read()
 
 # Find all links to the articles
@@ -25,15 +24,13 @@ article_links = re.findall('/h\?article=[a-f0-9/]*&opt=\d', req)
 
 # Find link to the next page
 next_pages = re.findall('/h\?list=&opt=\d&offset=[0-9]*%[A-Fa-f0-9/]*', req)
+next_page = 'http://avherald.com' + next_pages[0]
 
-for next_page in next_pages:
-    next_page = 'http://avherald.com' + next_page
-    
-    # open the next page
-    req_next = urllib2.urlopen(next_page).read()
-    
-    # Find all links to the articles on next page and add them to the others
-    article_links = article_links + re.findall('/h\?article=[a-f0-9/]*&opt=\d', req_next)
+#open the next page
+req_next = urllib2.urlopen(next_page).read()
+
+# Find all links to the articles on next page and add them to the others
+article_links = article_links + re.findall('/h\?article=[a-f0-9/]*&opt=\d', req_next)
 
 
 # Initialize the rss feed
