@@ -7,7 +7,12 @@ import PyRSS2Gen
 import hashlib
 import parsedatetime.parsedatetime
 
+
+# Be sure to replace the 'path_to_rss_file' with a working one
+# Change the 'opt' for filters
 path_to_rss_file = "/some/directory/on/local/hdd/or/server/aviationherald.xml"
+opt = '0'
+
 
 dtcal = parsedatetime.parsedatetime.Calendar()
 
@@ -16,8 +21,8 @@ opener = urllib2.build_opener()
 # add different user agent here
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
 urllib2.install_opener(opener)
-# Change the 'opt' for filters
-req = urllib2.urlopen('http://avherald.com/h?list=&opt=0').read()
+homepage = 'http://avherald.com/h?list=&opt=' + opt
+req = urllib2.urlopen(homepage).read()
 
 # Find all links to the articles
 article_links = re.findall('/h\?article=[a-f0-9/]*&opt=\d', req)
@@ -26,21 +31,20 @@ article_links = re.findall('/h\?article=[a-f0-9/]*&opt=\d', req)
 next_pages = re.findall('/h\?list=&opt=\d&offset=[0-9]*%[A-Fa-f0-9/]*', req)
 next_page = 'http://avherald.com' + next_pages[0]
 
-#open the next page
+# open the next page
 req_next = urllib2.urlopen(next_page).read()
 
 # Find all links to the articles on next page and add them to the others
 article_links = article_links + re.findall('/h\?article=[a-f0-9/]*&opt=\d', req_next)
 
-
 # Initialize the rss feed
-rss = PyRSS2Gen.RSS2(
-    language = "en-US",
-    copyright = "Copyright (c) 2008-2012, by The Aviation Herald",
-    title = "Aviation Herald News",
-    link = "http://www.avherald.com/",
-    description = "Incidents and News in Aviation",
-    lastBuildDate = datetime.datetime.utcnow())
+rss = PyRSS2Gen.RSS2(language = "en-US",
+                     copyright = "Copyright (c) 2008-2012, by The Aviation Herald",
+                     title = "Aviation Herald News",
+                     link = "http://www.avherald.com/",
+                     description = "Incidents and News in Aviation",
+                     lastBuildDate = datetime.datetime.utcnow())
+
 
 # Do the actual work!
 for article_link in article_links:
@@ -49,7 +53,6 @@ for article_link in article_links:
     
     
     # Title of Article
-    # '<span class="headline_article">' is incorrect, '<span class="headline_avherald">' isn't unique - therefore this grabs the window title
     title = re.findall('<title>.*?</title>', article_raw)[0][7:-8]
     
     # Date of Article
@@ -60,7 +63,7 @@ for article_link in article_links:
     article_content = article_content.replace('<br/>','<br />')
 
     # Add the Date in small grey font to the Article
-    message = "<font size=-1 color=\"grey\">" + date_created_updated_raw + "<br /><br /></font>" + article_content
+    article = "<font size=-1 color=\"grey\">" + date_created_updated_raw + "<br /><br /></font>" + article_content
     
     # Parse all the dates
     date_created_updated = re.findall(' [JASONFMD][aepuco][bryglnpctv].[0-9]{1,2}[r,s,t,n,d,h]{0,3}.' + '[0-9]{4}.[0-9]{2}:[0-9]{2}Z', date_created_updated_raw)
@@ -79,10 +82,12 @@ for article_link in article_links:
     rss.items.append(PyRSS2Gen.RSSItem(
                 title = title,
                 link = article_link,
-                description = message,
+                description = article,
                 # Sometimes, articles get updated without an url change
                 # thats why a checksum, isPermalink = false
-                guid = PyRSS2Gen.Guid(hashlib.sha1(message).hexdigest(),0),
+                guid = PyRSS2Gen.Guid(hashlib.sha1(date_created_updated_raw).hexdigest(),0),
+                # Replace guid with a hash of the article title so that the article is not considered as new if there is an update
+                # guid = PyRSS2Gen.Guid(hashlib.sha1(title).hexdigest(),0),
                 pubDate = datetime.datetime(date_updated[0],date_updated[1],date_updated[2],date_updated[3],date_updated[4])))
 
 rss.write_xml(open(path_to_rss_file, "w"))

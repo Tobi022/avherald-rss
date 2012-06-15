@@ -15,7 +15,7 @@ the same directory as well. You can get the latest version here:
 http://code.google.com/p/parsedatetime/
 
 You can change the filter options by changing the 'opt=' parameter
-in the avherald.com url.
+at the beginning of the script.
 
 Be sure to replace the path_to_rss_file with a working one.
 Enjoy!
@@ -23,6 +23,27 @@ Enjoy!
 Please be aware of the avherald.com copyright.
 It prohibits reprint and republishing, so please do not publish
 your generated .xml file!
+
+
+NOTE FOR FEVER°-USERS (http://www.feedafever.com)
+=================================================
+You may run into double- or even multiple entries of a single article.
+This is caused by the way Fever handles the guid (a kind of
+identifier) of an article in contrast to this script. If an article
+at avherald.com is updated, the script will generate a completely new
+guid for it and therefore Fever considers it as a whole new article -
+with the advance that it will be marked as new.
+You can give it a try like this, but sometimes there are two or more
+"same" articles right next to each other. The newest one really is
+the newest one, the other ones are older versions stored in the DB,
+although they aren't in the .xml-file itself anymore.
+Optional, you can try the replacement version of the guid (just place
+a "#" in front of the original line beginning with "guid =" and
+delete the "#" in front of the second one) which basically makes the
+guid a static value. With this, an updated article will be considered
+as updated but NOT marked as new. Additionally, there are no more
+multiple entries.
+
 
 LICENSE:
 
